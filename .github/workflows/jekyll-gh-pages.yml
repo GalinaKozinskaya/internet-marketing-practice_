@@ -32,6 +32,10 @@ jobs:
           source: ./
           destination: ./_site
 
+      - name: Make built site writable
+        run: |
+          sudo chmod -R a+rwX ./_site
+
       - name: Add Umami analytics to all HTML pages
         shell: bash
         run: |
@@ -70,7 +74,7 @@ jobs:
             }
 
 
-            /* КЛИК ПО РАБОТЕ / ФАЙЛУ */
+            /* КЛИК ПО РАБОТЕ ИЛИ ФАЙЛУ */
 
             document.addEventListener("click", event => {
 
@@ -186,6 +190,8 @@ jobs:
 
           html_files = list(Path("_site").rglob("*.html"))
 
+          changed = 0
+
           for path in html_files:
 
               text = path.read_text(
@@ -193,39 +199,41 @@ jobs:
                   errors="ignore"
               )
 
-              # Umami уже встроен — второй раз не вставляем.
-              if WEBSITE_ID not in text:
+              if WEBSITE_ID in text:
+                  continue
 
-                  if re.search(r"</head\s*>", text, re.I):
-                      text = re.sub(
-                          r"</head\s*>",
-                          tracker + "\n</head>",
-                          text,
-                          count=1,
-                          flags=re.I
-                      )
-                  else:
-                      text = tracker + "\n" + text
-
-                  if re.search(r"</body\s*>", text, re.I):
-                      text = re.sub(
-                          r"</body\s*>",
-                          behaviour + "\n</body>",
-                          text,
-                          count=1,
-                          flags=re.I
-                      )
-                  else:
-                      text += "\n" + behaviour
-
-                  path.write_text(
+              if re.search(r"</head\s*>", text, re.I):
+                  text = re.sub(
+                      r"</head\s*>",
+                      tracker + "\n</head>",
                       text,
-                      encoding="utf-8"
+                      count=1,
+                      flags=re.I
                   )
+              else:
+                  text = tracker + "\n" + text
+
+              if re.search(r"</body\s*>", text, re.I):
+                  text = re.sub(
+                      r"</body\s*>",
+                      behaviour + "\n</body>",
+                      text,
+                      count=1,
+                      flags=re.I
+                  )
+              else:
+                  text += "\n" + behaviour
+
+              path.write_text(
+                  text,
+                  encoding="utf-8"
+              )
+
+              changed += 1
 
           print(
-              f"Umami analytics added to "
-              f"{len(html_files)} HTML files"
+              f"Found {len(html_files)} HTML files; "
+              f"analytics added to {changed}"
           )
           PY
 
