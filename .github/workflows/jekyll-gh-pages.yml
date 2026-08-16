@@ -1,0 +1,249 @@
+name: Deploy Jekyll site with Umami
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Add Umami analytics to all HTML pages
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          WEBSITE_ID = "d769c026-8b32-46da-a2f6-41ffed18732"
+
+          tracker = f'''
+          <script defer
+            src="https://cloud.umami.is/script.js"
+            data-website-id="{WEBSITE_ID}">
+          </script>
+          '''
+
+          behaviour = r'''
+          <script>
+          (() => {
+
+            function track(name, data = {}) {
+              const send = () => {
+                if (
+                  window.umami &&
+                  typeof window.umami.track === "function"
+                ) {
+                  window.umami.track(name, data);
+                  return true;
+                }
+                return false;
+              };
+
+              if (!send()) {
+                setTimeout(send, 1000);
+              }
+            }
+
+
+            /* КЛИК ПО РАБОТЕ / ФАЙЛУ */
+
+            document.addEventListener("click", event => {
+
+              const link = event.target.closest("a[href]");
+              if (!link) return;
+
+              try {
+                const url = new URL(link.href, location.href);
+
+                if (url.origin !== location.origin) return;
+
+                if (
+                  url.pathname === location.pathname &&
+                  url.hash
+                ) return;
+
+                track("work-open", {
+                  path: url.pathname
+                });
+
+              } catch (_) {}
+
+            });
+
+
+            /* ГЛУБИНА ПРОКРУТКИ */
+
+            const scrollMarks = [25, 50, 75, 100];
+            const scrollSent = new Set();
+
+            function checkScroll() {
+
+              const doc = document.documentElement;
+
+              const available = Math.max(
+                doc.scrollHeight - window.innerHeight,
+                1
+              );
+
+              const percent = Math.min(
+                100,
+                Math.round(
+                  (window.scrollY / available) * 100
+                )
+              );
+
+              scrollMarks.forEach(mark => {
+
+                if (
+                  percent >= mark &&
+                  !scrollSent.has(mark)
+                ) {
+
+                  scrollSent.add(mark);
+
+                  track("scroll-depth", {
+                    percent: mark
+                  });
+                }
+
+              });
+
+            }
+
+            window.addEventListener(
+              "scroll",
+              checkScroll,
+              { passive: true }
+            );
+
+            checkScroll();
+
+
+            /* АКТИВНОЕ ВРЕМЯ НА СТРАНИЦЕ */
+
+            const timeMarks = [30, 60, 120, 300];
+            const timeSent = new Set();
+
+            let activeSeconds = 0;
+
+            setInterval(() => {
+
+              if (
+                document.visibilityState === "visible" &&
+                document.hasFocus()
+              ) {
+
+                activeSeconds++;
+
+                timeMarks.forEach(mark => {
+
+                  if (
+                    activeSeconds >= mark &&
+                    !timeSent.has(mark)
+                  ) {
+
+                    timeSent.add(mark);
+
+                    track("active-time", {
+                      seconds: mark
+                    });
+                  }
+
+                });
+
+              }
+
+            }, 1000);
+
+          })();
+          </script>
+          '''
+
+          html_files = list(Path("_site").rglob("*.html"))
+
+          for path in html_files:
+
+              text = path.read_text(
+                  encoding="utf-8",
+                  errors="ignore"
+              )
+
+              # Umami уже встроен — второй раз не вставляем.
+              if WEBSITE_ID not in text:
+
+                  if re.search(r"</head\s*>", text, re.I):
+                      text = re.sub(
+                          r"</head\s*>",
+                          tracker + "\n</head>",
+                          text,
+                          count=1,
+                          flags=re.I
+                      )
+                  else:
+                      text = tracker + "\n" + text
+
+                  if re.search(r"</body\s*>", text, re.I):
+                      text = re.sub(
+                          r"</body\s*>",
+                          behaviour + "\n</body>",
+                          text,
+                          count=1,
+                          flags=re.I
+                      )
+                  else:
+                      text += "\n" + behaviour
+
+                  path.write_text(
+                      text,
+                      encoding="utf-8"
+                  )
+
+          print(
+              f"Umami analytics added to "
+              f"{len(html_files)} HTML files"
+          )
+          PY
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./_site
+
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
