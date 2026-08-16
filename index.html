@@ -3,77 +3,194 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Практические работы — интернет-маркетинг</title>
+<title>Практические работы — интернет-маркетинг</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+*{box-sizing:border-box}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f6f7f8;
-      color: #171717;
-    }
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f6f7f8;
+  color:#171717;
+}
 
-    main {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 60px 24px;
-    }
+main{
+  max-width:900px;
+  margin:0 auto;
+  padding:48px 24px 80px;
+}
 
-    h1 {
-      margin: 0 0 12px;
-      font-size: 42px;
-      line-height: 1.1;
-    }
+h1{
+  margin:0 0 8px;
+  font-size:42px;
+}
 
-    .subtitle {
-      margin: 0 0 40px;
-      color: #666;
-      font-size: 18px;
-    }
+.subtitle{
+  margin:0 0 42px;
+  color:#666;
+  font-size:17px;
+}
 
-    .work {
-      display: block;
-      margin: 10px 0;
-      padding: 18px 20px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      color: #111;
-      text-decoration: none;
-      font-size: 18px;
-      line-height: 1.35;
-      transition: 0.15s ease;
-    }
+section{
+  margin:0 0 38px;
+}
 
-    .work:hover {
-      border-color: #111;
-      transform: translateY(-1px);
-    }
-  </style>
+h2{
+  margin:0 0 14px;
+  font-size:24px;
+}
+
+.work{
+  display:block;
+  padding:17px 20px;
+  margin:9px 0;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:10px;
+  color:#111;
+  text-decoration:none;
+  font-size:17px;
+}
+
+.work:hover{
+  border-color:#111;
+}
+</style>
 </head>
 
 <body>
+<main>
 
-  <main>
-    <h1>Практические работы</h1>
-    <p class="subtitle">Интернет-маркетинг · Skillbox · 2026</p>
+<h1>Практические работы</h1>
+<p class="subtitle">Интернет-маркетинг · Skillbox · 2026</p>
 
-    {% for work in site.static_files %}
-      {% if work.extname == ".html" %}
-        <a class="work" href="{{ work.path | relative_url }}">
-          {{ work.basename | replace: "_", " " }}
-        </a>
-      {% endif %}
-    {% endfor %}
 
-  </main>
+<section>
+<h2>Контекстная реклама</h2>
 
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+{% if work.extname == ".html" and n contains "яндекс директ" %}
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+{% endif %}
+{% endfor %}
+</section>
+
+
+<section>
+<h2>SEO и сайты</h2>
+
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+{% if work.extname == ".html" %}
+{% if n contains "seo" or n contains "лендинг" or n contains "tilda" or n contains "rozy-obosnovanie" %}
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+{% endif %}
+{% endif %}
+{% endfor %}
+</section>
+
+
+<section>
+<h2>Таргетированная реклама</h2>
+
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+{% if work.extname == ".html" %}
+{% if n contains "target" or n contains "таргет" or n contains "vk" or n contains "пиксел" %}
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+{% endif %}
+{% endif %}
+{% endfor %}
+</section>
+
+
+<section>
+<h2>Email-маркетинг</h2>
+
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+{% if work.extname == ".html" and n contains "email" %}
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+{% endif %}
+{% endfor %}
+</section>
+
+
+<section>
+<h2>Аналитика и исследования</h2>
+
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+{% if work.extname == ".html" %}
+{% if n contains "анализ продвижения" or n contains "медийн" %}
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+{% endif %}
+{% endif %}
+{% endfor %}
+</section>
+
+
+<section>
+<h2>Комплексные проекты</h2>
+
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+{% if work.extname == ".html" and n contains "palantir" %}
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+{% endif %}
+{% endfor %}
+</section>
+
+
+<section>
+<h2>Другие работы</h2>
+
+{% for work in site.static_files %}
+{% assign n = work.basename | downcase %}
+
+{% if work.extname == ".html" %}
+
+{% unless n contains "яндекс директ"
+   or n contains "seo"
+   or n contains "лендинг"
+   or n contains "tilda"
+   or n contains "rozy-obosnovanie"
+   or n contains "target"
+   or n contains "таргет"
+   or n contains "vk"
+   or n contains "пиксел"
+   or n contains "email"
+   or n contains "анализ продвижения"
+   or n contains "медийн"
+   or n contains "palantir" %}
+
+<a class="work" href="{{ work.path | relative_url }}">
+{{ work.basename | replace: "_", " " | replace: "-", " " }}
+</a>
+
+{% endunless %}
+{% endif %}
+{% endfor %}
+
+</section>
+
+</main>
 </body>
 </html>
