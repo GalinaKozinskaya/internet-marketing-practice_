@@ -1,0 +1,62 @@
+---
+---
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Практические работы — интернет-маркетинг</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f6f7f8;
+  color:#171717;
+}
+main{
+  max-width:900px;
+  margin:0 auto;
+  padding:60px 24px;
+}
+h1{
+  font-size:42px;
+  margin:0 0 12px;
+}
+p{
+  color:#666;
+  margin-bottom:40px;
+}
+a{
+  display:block;
+  padding:18px 20px;
+  margin:10px 0;
+  background:white;
+  border:1px solid #ddd;
+  border-radius:10px;
+  color:#111;
+  text-decoration:none;
+  font-size:18px;
+}
+a:hover{
+  border-color:#111;
+}
+</style>
+</head>
+
+<body>
+<main>
+<h1>Практические работы</h1>
+<p>Интернет-маркетинг · Skillbox · 2026</p>
+
+{% assign works = site.html_files | sort: "name" %}
+{% for work in works %}
+  {% unless work.name == "index.html" %}
+    <a href="{{ work.path | relative_url }}">
+      {{ work.basename | replace: "_", " " }}
+    </a>
+  {% endunless %}
+{% endfor %}
+
+</main>
+</body>
+</html>
