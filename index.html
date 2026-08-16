@@ -9,188 +9,515 @@
 <title>Практические работы — интернет-маркетинг</title>
 
 <style>
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f6f7f8;
-  color:#171717;
+* {
+  box-sizing: border-box;
 }
 
-main{
-  max-width:900px;
-  margin:0 auto;
-  padding:48px 24px 80px;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f7f8;
+  color: #171717;
 }
 
-h1{
-  margin:0 0 8px;
-  font-size:42px;
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
 }
 
-.subtitle{
-  margin:0 0 42px;
-  color:#666;
-  font-size:17px;
+h1 {
+  margin: 0 0 8px;
+  font-size: 42px;
+  line-height: 1.1;
 }
 
-section{
-  margin:0 0 38px;
+.subtitle {
+  margin: 0 0 42px;
+  color: #666;
+  font-size: 17px;
 }
 
-h2{
-  margin:0 0 14px;
-  font-size:24px;
+section {
+  margin: 0 0 38px;
 }
 
-.work{
-  display:block;
-  padding:17px 20px;
-  margin:9px 0;
-  background:#fff;
-  border:1px solid #ddd;
-  border-radius:10px;
-  color:#111;
-  text-decoration:none;
-  font-size:17px;
+h2 {
+  margin: 0 0 14px;
+  font-size: 24px;
 }
 
-.work:hover{
-  border-color:#111;
+.work {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin: 9px 0;
+  padding: 17px 20px;
+
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  color: #111;
+  text-decoration: none;
+  font-size: 17px;
+  line-height: 1.35;
+
+  transition: 0.15s ease;
+}
+
+.work:hover {
+  border-color: #111;
+  transform: translateY(-1px);
+}
+
+.type {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+
+  border-radius: 6px;
+  background: #f0f1f2;
+
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.sources {
+  display: none;
+}
+
+.empty {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  main {
+    padding: 32px 16px 60px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  h2 {
+    font-size: 21px;
+  }
+
+  .work {
+    font-size: 16px;
+  }
 }
 </style>
 </head>
 
 <body>
+
 <main>
 
 <h1>Практические работы</h1>
 <p class="subtitle">Интернет-маркетинг · Skillbox · 2026</p>
 
 
-<section>
-<h2>Контекстная реклама</h2>
+<section id="context-section">
+  <h2>Контекстная реклама</h2>
+  <div id="context"></div>
+</section>
 
-{% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-{% if work.extname == ".html" and n contains "яндекс директ" %}
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
-</a>
-{% endif %}
-{% endfor %}
+<section id="seo-section">
+  <h2>SEO и сайты</h2>
+  <div id="seo"></div>
+</section>
+
+<section id="target-section">
+  <h2>Таргетированная реклама</h2>
+  <div id="target"></div>
+</section>
+
+<section id="email-section">
+  <h2>Email-маркетинг</h2>
+  <div id="email"></div>
+</section>
+
+<section id="analytics-section">
+  <h2>Аналитика и исследования</h2>
+  <div id="analytics"></div>
+</section>
+
+<section id="projects-section">
+  <h2>Комплексные проекты</h2>
+  <div id="projects"></div>
+</section>
+
+<section id="other-section">
+  <h2>Другие работы</h2>
+  <div id="other"></div>
 </section>
 
 
-<section>
-<h2>SEO и сайты</h2>
+<div class="sources">
 
 {% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-{% if work.extname == ".html" %}
-{% if n contains "seo" or n contains "лендинг" or n contains "tilda" or n contains "rozy-obosnovanie" %}
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
+<a
+  class="work-source"
+  data-name="{{ work.basename | escape }}"
+  data-ext="{{ work.extname | remove: '.' | downcase }}"
+  href="{{ work.path | relative_url }}">
 </a>
-{% endif %}
-{% endif %}
-{% endfor %}
-</section>
-
-
-<section>
-<h2>Таргетированная реклама</h2>
-
-{% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-{% if work.extname == ".html" %}
-{% if n contains "target" or n contains "таргет" or n contains "vk" or n contains "пиксел" %}
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
-</a>
-{% endif %}
-{% endif %}
-{% endfor %}
-</section>
-
-
-<section>
-<h2>Email-маркетинг</h2>
-
-{% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-{% if work.extname == ".html" and n contains "email" %}
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
-</a>
-{% endif %}
-{% endfor %}
-</section>
-
-
-<section>
-<h2>Аналитика и исследования</h2>
-
-{% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-{% if work.extname == ".html" %}
-{% if n contains "анализ продвижения" or n contains "медийн" %}
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
-</a>
-{% endif %}
-{% endif %}
-{% endfor %}
-</section>
-
-
-<section>
-<h2>Комплексные проекты</h2>
-
-{% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-{% if work.extname == ".html" and n contains "palantir" %}
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
-</a>
-{% endif %}
-{% endfor %}
-</section>
-
-
-<section>
-<h2>Другие работы</h2>
-
-{% for work in site.static_files %}
-{% assign n = work.basename | downcase %}
-
-{% if work.extname == ".html" %}
-
-{% unless n contains "яндекс директ"
-   or n contains "seo"
-   or n contains "лендинг"
-   or n contains "tilda"
-   or n contains "rozy-obosnovanie"
-   or n contains "target"
-   or n contains "таргет"
-   or n contains "vk"
-   or n contains "пиксел"
-   or n contains "email"
-   or n contains "анализ продвижения"
-   or n contains "медийн"
-   or n contains "palantir" %}
-
-<a class="work" href="{{ work.path | relative_url }}">
-{{ work.basename | replace: "_", " " | replace: "-", " " }}
-</a>
-
-{% endunless %}
-{% endif %}
 {% endfor %}
 
-</section>
+</div>
 
 </main>
+
+
+<script>
+const allowedExtensions = new Set([
+  "html", "htm",
+  "pdf",
+  "xlsx", "xls", "csv",
+  "docx", "doc",
+  "pptx", "ppt"
+]);
+
+function normalizeName(value) {
+  return value
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getCategory(name) {
+
+  if (
+    name.includes("яндекс директ")
+  ) {
+    return "context";
+  }
+
+  if (
+    name.includes("seo") ||
+    name.includes("лендинг") ||
+    name.includes("tilda") ||
+    name.includes("rozy obosnovanie")
+  ) {
+    return "seo";
+  }
+
+  if (
+    name.includes("targethunter") ||
+    name.includes("vk реклама") ||
+    name.includes("tamara vk") ||
+    name.includes("таргет") ||
+    name.includes("пиксел")
+  ) {
+    return "target";
+  }
+
+  if (
+    name.includes("email")
+  ) {
+    return "email";
+  }
+
+  if (
+    name.includes("медийн") ||
+    name.includes("анализ продвижения") ||
+    name.includes("лисий журнал")
+  ) {
+    return "analytics";
+  }
+
+  if (
+    name.includes("palantir")
+  ) {
+    return "projects";
+  }
+
+  return "other";
+}
+
+
+function getLabel(rawName) {
+
+  const n = normalizeName(rawName);
+
+  /* КОНТЕКСТНАЯ РЕКЛАМА */
+
+  if (
+    n.includes("яндекс директ") &&
+    n.includes("поиск")
+  ) {
+    return "Яндекс Директ — Поиск";
+  }
+
+  if (
+    n.includes("яндекс директ") &&
+    n.includes("флорибунда")
+  ) {
+    return "Яндекс Директ — Флорибунда";
+  }
+
+
+  /* SEO */
+
+  if (
+    n.includes("seo") &&
+    n.includes("title") &&
+    n.includes("description")
+  ) {
+    return "SEO — Title и Description";
+  }
+
+  if (
+    n.includes("seo ошибки") ||
+    n.includes("technical seo audit error horizon")
+  ) {
+    return "SEO — Ошибки и скорость";
+  }
+
+  if (
+    n.includes("seo аудит") ||
+    (
+      n.includes("техника") &&
+      n.includes("семантика") &&
+      n.includes("конкурент")
+    )
+  ) {
+    return "SEO-аудит — техника, семантика, конкуренты";
+  }
+
+  if (
+    n.includes("rozy obosnovanie") ||
+    n.includes("лендинг тильды") ||
+    n.includes("лендинг на tilda")
+  ) {
+    return "Лендинг на Tilda";
+  }
+
+
+  /* ТАРГЕТ */
+
+  if (n.includes("targethunter")) {
+    return "TargetHunter + пиксель";
+  }
+
+  if (
+    n.includes("vk реклама объявления") ||
+    n.includes("одна роза четыре жизни")
+  ) {
+    return "VK-реклама — объявления";
+  }
+
+  if (n.includes("tamara vk template composition")) {
+    return "VK-реклама — структура объявления";
+  }
+
+  if (
+    n.includes("визуал") &&
+    n.includes("таргет")
+  ) {
+    return "Таргет — визуал и текст";
+  }
+
+
+  /* EMAIL */
+
+  if (
+    n.includes("email") &&
+    (
+      n.includes("part 1") ||
+      n.includes("часть 1")
+    )
+  ) {
+    return "Email-маркетинг — часть 1";
+  }
+
+  if (
+    n.includes("email") &&
+    (
+      n.includes("part 2") ||
+      n.includes("часть 2")
+    )
+  ) {
+    return "Email-маркетинг — часть 2";
+  }
+
+  if (
+    n.includes("email") &&
+    (
+      n.includes("part 3") ||
+      n.includes("часть 3")
+    )
+  ) {
+    return "Email-маркетинг — часть 3";
+  }
+
+
+  /* АНАЛИТИКА И ИССЛЕДОВАНИЯ */
+
+  if (n.includes("медийная разведка")) {
+    return "Медийная разведка";
+  }
+
+  if (
+    n.includes("анализ продвижения") &&
+    n.includes("ga4")
+  ) {
+    return "Анализ продвижения — GA4";
+  }
+
+  if (
+    n.includes("анализ продвижения") &&
+    n.includes("ям")
+  ) {
+    return "Анализ продвижения — ЯМ";
+  }
+
+  if (
+    n.includes("анализ продвижения") &&
+    n.includes("цели")
+  ) {
+    return "Анализ продвижения — цели";
+  }
+
+  if (n.includes("лисий журнал")) {
+    return "Лисий журнал — аудитория";
+  }
+
+
+  /* PALANTIR */
+
+  if (
+    n.includes("palantir") &&
+    n.includes("воронка") &&
+    n.includes("cjm")
+  ) {
+    return "Palantir — Воронка и CJM";
+  }
+
+  if (
+    n === "palantir cjm"
+  ) {
+    return "Palantir — CJM";
+  }
+
+  if (
+    n.includes("palantir") &&
+    n.includes("аудит коммуникаций")
+  ) {
+    return "Palantir — Аудит коммуникаций";
+  }
+
+  if (
+    n.includes("palantir") &&
+    n.includes("бриф")
+  ) {
+    return "Palantir — Бриф";
+  }
+
+  if (
+    n.includes("palantir") &&
+    n.includes("целевая аудитория")
+  ) {
+    return "Palantir — Целевая аудитория";
+  }
+
+  if (
+    n.includes("palantir") &&
+    n.includes("конкурент")
+  ) {
+    return "Palantir — Конкурентный анализ";
+  }
+
+
+  /* ЕСЛИ НАЗВАНИЕ НЕ ПОПАЛО В НАШИ ПРАВИЛА */
+
+  return rawName
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+
+const sources = [...document.querySelectorAll(".work-source")];
+
+sources.forEach(source => {
+
+  const rawName = source.dataset.name || "";
+  const ext = (source.dataset.ext || "").toLowerCase();
+
+  if (!allowedExtensions.has(ext)) {
+    return;
+  }
+
+  const normalized = normalizeName(rawName);
+
+  if (
+    normalized === "readme" ||
+    normalized === "index"
+  ) {
+    return;
+  }
+
+  const category = getCategory(normalized);
+  const label = getLabel(rawName);
+
+  const card = document.createElement("a");
+
+  card.className = "work";
+  card.href = source.href;
+
+  const text = document.createElement("span");
+  text.textContent = label;
+
+  card.appendChild(text);
+
+  if (ext !== "html" && ext !== "htm") {
+
+    const type = document.createElement("span");
+
+    type.className = "type";
+    type.textContent = ext.toUpperCase();
+
+    card.appendChild(type);
+  }
+
+  document.getElementById(category).appendChild(card);
+});
+
+
+[
+  "context",
+  "seo",
+  "target",
+  "email",
+  "analytics",
+  "projects",
+  "other"
+].forEach(category => {
+
+  const container = document.getElementById(category);
+  const section = document.getElementById(category + "-section");
+
+  const cards = [...container.querySelectorAll(".work")];
+
+  cards.sort((a, b) =>
+    a.textContent.localeCompare(b.textContent, "ru")
+  );
+
+  cards.forEach(card => container.appendChild(card));
+
+  if (cards.length === 0) {
+    section.style.display = "none";
+  }
+});
+
+</script>
+
 </body>
 </html>
