@@ -9,107 +9,88 @@
 <title>Практические работы — интернет-маркетинг</title>
 
 <style>
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f6f7f8;
+  color:#171717;
 }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f6f7f8;
-  color: #171717;
+main{
+  max-width:900px;
+  margin:0 auto;
+  padding:48px 24px 80px;
 }
 
-main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 48px 24px 80px;
+h1{
+  margin:0 0 8px;
+  font-size:42px;
+  line-height:1.1;
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 42px;
-  line-height: 1.1;
+.subtitle{
+  margin:0 0 42px;
+  color:#666;
+  font-size:17px;
 }
 
-.subtitle {
-  margin: 0 0 42px;
-  color: #666;
-  font-size: 17px;
+section{
+  margin:0 0 38px;
 }
 
-section {
-  margin: 0 0 38px;
+h2{
+  margin:0 0 14px;
+  font-size:24px;
 }
 
-h2 {
-  margin: 0 0 14px;
-  font-size: 24px;
+.work{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+
+  margin:9px 0;
+  padding:17px 20px;
+
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:10px;
+
+  color:#111;
+  text-decoration:none;
+  font-size:17px;
+  line-height:1.35;
+
+  transition:.15s ease;
 }
 
-.work {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  margin: 9px 0;
-  padding: 17px 20px;
-
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-
-  color: #111;
-  text-decoration: none;
-  font-size: 17px;
-  line-height: 1.35;
-
-  transition: 0.15s ease;
+.work:hover{
+  border-color:#111;
+  transform:translateY(-1px);
 }
 
-.work:hover {
-  border-color: #111;
-  transform: translateY(-1px);
+.type{
+  flex:0 0 auto;
+  padding:4px 7px;
+  border-radius:6px;
+  background:#f0f1f2;
+  color:#777;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.04em;
 }
 
-.type {
-  flex: 0 0 auto;
-  padding: 4px 7px;
-
-  border-radius: 6px;
-  background: #f0f1f2;
-
-  color: #777;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .04em;
+.sources{
+  display:none;
 }
 
-.sources {
-  display: none;
-}
-
-.empty {
-  display: none;
-}
-
-@media (max-width: 600px) {
-  main {
-    padding: 32px 16px 60px;
-  }
-
-  h1 {
-    font-size: 32px;
-  }
-
-  h2 {
-    font-size: 21px;
-  }
-
-  .work {
-    font-size: 16px;
-  }
+@media(max-width:600px){
+  main{padding:32px 16px 60px}
+  h1{font-size:32px}
+  h2{font-size:21px}
+  .work{font-size:16px}
 }
 </style>
 </head>
@@ -120,7 +101,6 @@ h2 {
 
 <h1>Практические работы</h1>
 <p class="subtitle">Интернет-маркетинг · Skillbox · 2026</p>
-
 
 <section id="context-section">
   <h2>Контекстная реклама</h2>
@@ -158,14 +138,25 @@ h2 {
 </section>
 
 
+<!-- ВСЕ ОБЫЧНЫЕ ФАЙЛЫ -->
 <div class="sources">
 
 {% for work in site.static_files %}
 <a
   class="work-source"
-  data-name="{{ work.basename | escape }}"
-  data-ext="{{ work.extname | remove: '.' | downcase }}"
+  data-name="{{ work.name | escape }}"
+  data-path="{{ work.path | escape }}"
   href="{{ work.path | relative_url }}">
+</a>
+{% endfor %}
+
+<!-- ЕСЛИ КОГДА-НИБУДЬ ПОЯВЯТСЯ СТРАНИЦЫ С FRONT MATTER -->
+{% for p in site.pages %}
+<a
+  class="work-source"
+  data-name="{{ p.name | default: p.title | escape }}"
+  data-path="{{ p.path | escape }}"
+  href="{{ p.url | relative_url }}">
 </a>
 {% endfor %}
 
@@ -175,66 +166,103 @@ h2 {
 
 
 <script>
-const allowedExtensions = new Set([
-  "html", "htm",
-  "pdf",
-  "xlsx", "xls", "csv",
-  "docx", "doc",
-  "pptx", "ppt"
-]);
 
-function normalizeName(value) {
-  return value
+function normalize(value){
+  return (value || "")
     .toLowerCase()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[_\-–—]+/g," ")
+    .replace(/\s+/g," ")
     .trim();
 }
 
-function getCategory(name) {
+function fileExtension(name){
+  const pos = name.lastIndexOf(".");
+  if(pos === -1) return "";
+  return name.slice(pos + 1).toLowerCase();
+}
 
-  if (
-    name.includes("яндекс директ")
-  ) {
-    return "context";
-  }
+function basename(name){
+  const pos = name.lastIndexOf(".");
+  return pos === -1 ? name : name.slice(0,pos);
+}
 
-  if (
+/*
+  На витрину берём только файлы,
+  лежащие прямо в корне репозитория.
+  Поэтому если когда-нибудь появятся папки
+  с картинками/CSS/служебными ресурсами,
+  они не полезут работодателю в список.
+*/
+function isRootFile(path){
+  const clean=(path || "")
+    .replace(/^\/+/,"")
+    .replace(/\/+$/,"");
+
+  return clean !== "" && !clean.includes("/");
+}
+
+
+function category(name){
+
+  /*
+    SEO проверяем раньше "семантики",
+    чтобы SEO-аудит с семантикой
+    не попадал в контекстную рекламу.
+  */
+  if(
     name.includes("seo") ||
-    name.includes("лендинг") ||
     name.includes("tilda") ||
-    name.includes("rozy obosnovanie")
-  ) {
+    name.includes("тильд") ||
+    name.includes("лендинг")
+  ){
     return "seo";
   }
 
-  if (
+  if(
+    name.includes("яндекс директ") ||
+    name.includes("контекстн") ||
+    name.includes("медиаплан") ||
+    name.includes("макрос") ||
+    (
+      name.includes("семант") &&
+      !name.includes("seo")
+    )
+  ){
+    return "context";
+  }
+
+  if(
     name.includes("targethunter") ||
-    name.includes("vk реклама") ||
-    name.includes("tamara vk") ||
+    name.includes("vk реклам") ||
     name.includes("таргет") ||
-    name.includes("пиксел")
-  ) {
+    name.includes("пиксел") ||
+    name.includes("tamara vk")
+  ){
     return "target";
   }
 
-  if (
-    name.includes("email")
-  ) {
+  if(
+    name.includes("email") ||
+    name.includes("unisender")
+  ){
     return "email";
   }
 
-  if (
-    name.includes("медийн") ||
+  if(
     name.includes("анализ продвижения") ||
-    name.includes("лисий журнал")
-  ) {
+    name.includes("аналит") ||
+    name.includes("медийн") ||
+    name.includes("лисий журнал") ||
+    name.includes("similarweb") ||
+    name.includes("popsters") ||
+    name.includes("исследован")
+  ){
     return "analytics";
   }
 
-  if (
+  if(
     name.includes("palantir")
-  ) {
+  ){
     return "projects";
   }
 
@@ -242,252 +270,250 @@ function getCategory(name) {
 }
 
 
-function getLabel(rawName) {
+function prettyLabel(originalName){
 
-  const n = normalizeName(rawName);
+  const raw=basename(originalName);
+  const n=normalize(raw);
 
   /* КОНТЕКСТНАЯ РЕКЛАМА */
 
-  if (
-    n.includes("яндекс директ") &&
-    n.includes("поиск")
-  ) {
+  if(n.includes("яндекс директ") && n.includes("поиск")){
     return "Яндекс Директ — Поиск";
   }
 
-  if (
-    n.includes("яндекс директ") &&
-    n.includes("флорибунда")
-  ) {
+  if(n.includes("яндекс директ") && n.includes("флорибунда")){
     return "Яндекс Директ — Флорибунда";
+  }
+
+  if(
+    (
+      n.includes("контекстн") ||
+      n.includes("макрос")
+    ) &&
+    n.includes("семант")
+  ){
+    return "Контекстная реклама — семантика";
   }
 
 
   /* SEO */
 
-  if (
+  if(
     n.includes("seo") &&
     n.includes("title") &&
     n.includes("description")
-  ) {
+  ){
     return "SEO — Title и Description";
   }
 
-  if (
-    n.includes("seo ошибки") ||
-    n.includes("technical seo audit error horizon")
-  ) {
+  if(
+    n.includes("seo") &&
+    (
+      n.includes("ошиб") ||
+      n.includes("скорост") ||
+      n.includes("error")
+    )
+  ){
     return "SEO — Ошибки и скорость";
   }
 
-  if (
-    n.includes("seo аудит") ||
-    (
-      n.includes("техника") &&
-      n.includes("семантика") &&
-      n.includes("конкурент")
-    )
-  ) {
+  if(
+    n.includes("seo") &&
+    n.includes("семант") &&
+    n.includes("конкур")
+  ){
     return "SEO-аудит — техника, семантика, конкуренты";
   }
 
-  if (
-    n.includes("rozy obosnovanie") ||
-    n.includes("лендинг тильды") ||
-    n.includes("лендинг на tilda")
-  ) {
+  if(
+    n.includes("лендинг") ||
+    n.includes("tilda") ||
+    n.includes("тильд")
+  ){
     return "Лендинг на Tilda";
   }
 
 
   /* ТАРГЕТ */
 
-  if (n.includes("targethunter")) {
+  if(n.includes("targethunter")){
     return "TargetHunter + пиксель";
   }
 
-  if (
-    n.includes("vk реклама объявления") ||
-    n.includes("одна роза четыре жизни")
-  ) {
+  if(
+    n.includes("vk реклам") &&
+    n.includes("объяв")
+  ){
     return "VK-реклама — объявления";
   }
 
-  if (n.includes("tamara vk template composition")) {
+  if(
+    n.includes("tamara vk") ||
+    (
+      n.includes("vk") &&
+      n.includes("структур")
+    )
+  ){
     return "VK-реклама — структура объявления";
   }
 
-  if (
-    n.includes("визуал") &&
-    n.includes("таргет")
-  ) {
+  if(n.includes("визуал") && n.includes("таргет")){
     return "Таргет — визуал и текст";
   }
 
 
   /* EMAIL */
 
-  if (
-    n.includes("email") &&
-    (
-      n.includes("part 1") ||
-      n.includes("часть 1")
-    )
-  ) {
+  if(n.includes("email") && (n.includes("part 1") || n.includes("часть 1"))){
     return "Email-маркетинг — часть 1";
   }
 
-  if (
-    n.includes("email") &&
-    (
-      n.includes("part 2") ||
-      n.includes("часть 2")
-    )
-  ) {
+  if(n.includes("email") && (n.includes("part 2") || n.includes("часть 2"))){
     return "Email-маркетинг — часть 2";
   }
 
-  if (
-    n.includes("email") &&
-    (
-      n.includes("part 3") ||
-      n.includes("часть 3")
-    )
-  ) {
+  if(n.includes("email") && (n.includes("part 3") || n.includes("часть 3"))){
     return "Email-маркетинг — часть 3";
   }
 
 
-  /* АНАЛИТИКА И ИССЛЕДОВАНИЯ */
+  /* АНАЛИТИКА */
 
-  if (n.includes("медийная разведка")) {
-    return "Медийная разведка";
-  }
-
-  if (
-    n.includes("анализ продвижения") &&
-    n.includes("ga4")
-  ) {
+  if(n.includes("анализ продвижения") && n.includes("ga4")){
     return "Анализ продвижения — GA4";
   }
 
-  if (
-    n.includes("анализ продвижения") &&
-    n.includes("ям")
-  ) {
+  if(n.includes("анализ продвижения") && n.includes("ям")){
     return "Анализ продвижения — ЯМ";
   }
 
-  if (
-    n.includes("анализ продвижения") &&
-    n.includes("цели")
-  ) {
+  if(n.includes("анализ продвижения") && n.includes("цели")){
     return "Анализ продвижения — цели";
   }
 
-  if (n.includes("лисий журнал")) {
+  if(n.includes("лисий журнал")){
     return "Лисий журнал — аудитория";
+  }
+
+  if(n.includes("медийн")){
+    return "Медийная разведка";
   }
 
 
   /* PALANTIR */
 
-  if (
+  if(
     n.includes("palantir") &&
     n.includes("воронка") &&
     n.includes("cjm")
-  ) {
+  ){
     return "Palantir — Воронка и CJM";
   }
 
-  if (
-    n === "palantir cjm"
-  ) {
+  if(n === "palantir cjm"){
     return "Palantir — CJM";
   }
 
-  if (
-    n.includes("palantir") &&
-    n.includes("аудит коммуникаций")
-  ) {
+  if(n.includes("palantir") && n.includes("аудит коммуникаций")){
     return "Palantir — Аудит коммуникаций";
   }
 
-  if (
-    n.includes("palantir") &&
-    n.includes("бриф")
-  ) {
+  if(n.includes("palantir") && n.includes("бриф")){
     return "Palantir — Бриф";
   }
 
-  if (
-    n.includes("palantir") &&
-    n.includes("целевая аудитория")
-  ) {
+  if(n.includes("palantir") && n.includes("целевая аудитория")){
     return "Palantir — Целевая аудитория";
   }
 
-  if (
-    n.includes("palantir") &&
-    n.includes("конкурент")
-  ) {
+  if(n.includes("palantir") && n.includes("конкурент")){
     return "Palantir — Конкурентный анализ";
   }
 
 
-  /* ЕСЛИ НАЗВАНИЕ НЕ ПОПАЛО В НАШИ ПРАВИЛА */
+  /*
+    ЛЮБОЙ НОВЫЙ ФАЙЛ, КОТОРОГО КОД НЕ ЗНАЕТ:
+    ничего не теряем.
+    Просто показываем его настоящее имя,
+    слегка очищенное от подчёркиваний.
+  */
 
-  return rawName
-    .replace(/_/g, " ")
-    .replace(/\s+/g, " ")
+  return raw
+    .replace(/_/g," ")
+    .replace(/\s+/g," ")
     .trim();
 }
 
 
-const sources = [...document.querySelectorAll(".work-source")];
+const seen=new Set();
 
-sources.forEach(source => {
+document.querySelectorAll(".work-source").forEach(source=>{
 
-  const rawName = source.dataset.name || "";
-  const ext = (source.dataset.ext || "").toLowerCase();
+  const originalName=source.dataset.name || "";
+  const path=source.dataset.path || "";
+  const href=source.href;
 
-  if (!allowedExtensions.has(ext)) {
-    return;
-  }
+  if(!originalName) return;
 
-  const normalized = normalizeName(rawName);
+  /*
+    Не показываем содержимое подпапок.
+    Работы кидаем прямо в корень,
+    как ты делаешь сейчас.
+  */
+  if(!isRootFile(path)) return;
 
-  if (
+  const rawBase=basename(originalName);
+  const normalized=normalize(rawBase);
+  const ext=fileExtension(originalName);
+
+  /*
+    Только наши служебные файлы.
+    Расширения работ НЕ фильтруются вообще.
+  */
+  if(
+    normalized === "index" ||
     normalized === "readme" ||
-    normalized === "index"
-  ) {
+    normalized === "404" ||
+    originalName.toLowerCase() === "cname"
+  ){
     return;
   }
 
-  const category = getCategory(normalized);
-  const label = getLabel(rawName);
+  /*
+    На случай если Jekyll передал один объект
+    одновременно через static_files и pages.
+  */
+  if(seen.has(href)) return;
+  seen.add(href);
 
-  const card = document.createElement("a");
+  const group=category(normalized);
+  const label=prettyLabel(originalName);
 
-  card.className = "work";
-  card.href = source.href;
+  const card=document.createElement("a");
+  card.className="work";
+  card.href=href;
 
-  const text = document.createElement("span");
-  text.textContent = label;
-
+  const text=document.createElement("span");
+  text.textContent=label;
   card.appendChild(text);
 
-  if (ext !== "html" && ext !== "htm") {
+  /*
+    HTML показываем без технической плашки.
+    У ВСЕХ остальных файлов отображаем
+    их настоящее расширение.
+  */
+  if(ext && ext !== "html" && ext !== "htm"){
 
-    const type = document.createElement("span");
+    const badge=document.createElement("span");
+    badge.className="type";
+    badge.textContent=ext.toUpperCase();
 
-    type.className = "type";
-    type.textContent = ext.toUpperCase();
-
-    card.appendChild(type);
+    card.appendChild(badge);
   }
 
-  document.getElementById(category).appendChild(card);
+  document
+    .getElementById(group)
+    .appendChild(card);
 });
 
 
@@ -499,22 +525,30 @@ sources.forEach(source => {
   "analytics",
   "projects",
   "other"
-].forEach(category => {
+].forEach(group=>{
 
-  const container = document.getElementById(category);
-  const section = document.getElementById(category + "-section");
+  const container=document.getElementById(group);
+  const section=document.getElementById(group+"-section");
 
-  const cards = [...container.querySelectorAll(".work")];
+  const cards=[...container.querySelectorAll(".work")];
 
-  cards.sort((a, b) =>
-    a.textContent.localeCompare(b.textContent, "ru")
+  cards.sort((a,b)=>
+    a.textContent.localeCompare(
+      b.textContent,
+      "ru",
+      {
+        numeric:true,
+        sensitivity:"base"
+      }
+    )
   );
 
-  cards.forEach(card => container.appendChild(card));
+  cards.forEach(card=>container.appendChild(card));
 
-  if (cards.length === 0) {
-    section.style.display = "none";
+  if(cards.length===0){
+    section.style.display="none";
   }
+
 });
 
 </script>
