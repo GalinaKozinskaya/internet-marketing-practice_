@@ -1,4 +1,4 @@
-name: Deploy Jekyll site with Umami
+name: Deploy portfolio with Umami
 
 on:
   push:
@@ -32,9 +32,284 @@ jobs:
           source: ./
           destination: ./_site
 
-      - name: Make built site writable
+      - name: Make site writable
+        run: sudo chmod -R a+rwX ./_site
+
+      - name: Create browser previews for Office files
+        shell: bash
         run: |
-          sudo chmod -R a+rwX ./_site
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import quote, unquote, urlsplit
+          import hashlib
+          import html
+          import re
+
+          SITE = Path("_site")
+
+          SITE_BASE = (
+              "https://galinakozinskaya.github.io/"
+              "internet-marketing-practice_/"
+          )
+
+          PROJECT_PREFIX = "/internet-marketing-practice_/"
+
+          OFFICE_EXTENSIONS = {
+              ".xlsx", ".xls", ".xlsm", ".xlsb",
+              ".docx", ".doc",
+              ".pptx", ".ppt"
+          }
+
+          PREVIEW_DIR = SITE / "preview"
+          PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
+
+          previews = {}
+
+          # --------------------------------------------------
+          # 1. Создаём HTML-превью для каждого Office-файла
+          # --------------------------------------------------
+
+          for file in SITE.rglob("*"):
+
+              if not file.is_file():
+                  continue
+
+              if file.suffix.lower() not in OFFICE_EXTENSIONS:
+                  continue
+
+              # Не обрабатываем служебные превью повторно
+              if PREVIEW_DIR in file.parents:
+                  continue
+
+              rel = file.relative_to(SITE).as_posix()
+
+              public_file_url = SITE_BASE + quote(
+                  rel,
+                  safe="/"
+              )
+
+              office_url = (
+                  "https://view.officeapps.live.com/"
+                  "op/embed.aspx?src="
+                  + quote(public_file_url, safe="")
+              )
+
+              safe_stem = re.sub(
+                  r"[^\w.-]+",
+                  "_",
+                  file.stem,
+                  flags=re.UNICODE
+              ).strip("_")
+
+              digest = hashlib.sha1(
+                  rel.encode("utf-8")
+              ).hexdigest()[:8]
+
+              preview_name = (
+                  f"{safe_stem}_{digest}.html"
+              )
+
+              preview_rel = (
+                  f"preview/{preview_name}"
+              )
+
+              preview_file = (
+                  PREVIEW_DIR / preview_name
+              )
+
+              title = html.escape(file.stem)
+
+              original_url = (
+                  PROJECT_PREFIX
+                  + quote(rel, safe="/")
+              )
+
+              page = f"""<!DOCTYPE html>
+          <html lang="ru">
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport"
+                content="width=device-width,initial-scale=1">
+
+          <title>{title}</title>
+
+          <style>
+          * {{
+            box-sizing: border-box;
+          }}
+
+          html, body {{
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background: #f6f7f8;
+          }}
+
+          .top {{
+            height: 58px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 18px;
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+          }}
+
+          .back {{
+            color: #111;
+            text-decoration: none;
+            font-weight: 700;
+            white-space: nowrap;
+          }}
+
+          .name {{
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 15px;
+          }}
+
+          iframe {{
+            display: block;
+            width: 100%;
+            height: calc(100vh - 58px);
+            border: 0;
+            background: #fff;
+          }}
+
+          .fallback {{
+            display: none;
+            padding: 30px;
+          }}
+          </style>
+          </head>
+
+          <body>
+
+          <div class="top">
+            <a class="back"
+               href="{PROJECT_PREFIX}">
+              ← Все работы
+            </a>
+
+            <div class="name">
+              {title}
+            </div>
+          </div>
+
+          <iframe
+            src="{office_url}"
+            title="{title}"
+            loading="eager"
+            referrerpolicy="no-referrer">
+          </iframe>
+
+          <script>
+          (() => {{
+            const fileName = {file.name!r};
+
+            function sendOpen() {{
+              if (
+                window.umami &&
+                typeof window.umami.track === "function"
+              ) {{
+                window.umami.track(
+                  "office-preview",
+                  {{ file: fileName }}
+                );
+              }} else {{
+                setTimeout(sendOpen, 700);
+              }}
+            }}
+
+            setTimeout(sendOpen, 900);
+          }})();
+          </script>
+
+          </body>
+          </html>
+          """
+
+              preview_file.write_text(
+                  page,
+                  encoding="utf-8"
+              )
+
+              previews[rel] = (
+                  PROJECT_PREFIX
+                  + quote(preview_rel, safe="/")
+              )
+
+          print(
+              f"Created {len(previews)} Office previews"
+          )
+
+          # --------------------------------------------------
+          # 2. Меняем прямые ссылки на Office-файлы
+          #    во ВСЕХ HTML-страницах
+          # --------------------------------------------------
+
+          href_re = re.compile(
+              r'href=(["\'])(.*?)\1',
+              re.I
+          )
+
+          def resolve_repo_file(href):
+
+              value = html.unescape(href)
+
+              try:
+                  path = urlsplit(value).path
+              except Exception:
+                  path = value
+
+              path = unquote(path)
+
+              if path.startswith(PROJECT_PREFIX):
+                  path = path[len(PROJECT_PREFIX):]
+              else:
+                  path = path.lstrip("/")
+
+              return path
+
+          for html_file in SITE.rglob("*.html"):
+
+              text = html_file.read_text(
+                  encoding="utf-8",
+                  errors="ignore"
+              )
+
+              def replace_href(match):
+
+                  quote_char = match.group(1)
+                  href = match.group(2)
+
+                  rel = resolve_repo_file(href)
+
+                  if rel in previews:
+                      return (
+                          "href="
+                          + quote_char
+                          + previews[rel]
+                          + quote_char
+                      )
+
+                  return match.group(0)
+
+              new_text = href_re.sub(
+                  replace_href,
+                  text
+              )
+
+              if new_text != text:
+                  html_file.write_text(
+                      new_text,
+                      encoding="utf-8"
+                  )
+
+          print("Office links redirected to previews")
+          PY
 
       - name: Add Umami analytics to all HTML pages
         shell: bash
@@ -43,7 +318,9 @@ jobs:
           from pathlib import Path
           import re
 
-          WEBSITE_ID = "d769c026-8b32-46da-a2f6-41ffed18732"
+          WEBSITE_ID = (
+              "d769c026-8b32-46da-a2f6-41ffed18732"
+          )
 
           tracker = f'''
           <script defer
@@ -57,7 +334,9 @@ jobs:
           (() => {
 
             function track(name, data = {}) {
+
               const send = () => {
+
                 if (
                   window.umami &&
                   typeof window.umami.track === "function"
@@ -65,78 +344,92 @@ jobs:
                   window.umami.track(name, data);
                   return true;
                 }
+
                 return false;
               };
 
               if (!send()) {
-                setTimeout(send, 1000);
+                setTimeout(send, 800);
               }
             }
 
 
-            /* КЛИК ПО РАБОТЕ ИЛИ ФАЙЛУ */
+            /* КЛИК ПО РАБОТЕ */
 
-            document.addEventListener("click", event => {
+            document.addEventListener(
+              "click",
+              event => {
 
-              const link = event.target.closest("a[href]");
-              if (!link) return;
+                const link =
+                  event.target.closest("a[href]");
 
-              try {
-                const url = new URL(link.href, location.href);
+                if (!link) return;
 
-                if (url.origin !== location.origin) return;
+                try {
 
-                if (
-                  url.pathname === location.pathname &&
-                  url.hash
-                ) return;
+                  const url =
+                    new URL(link.href, location.href);
 
-                track("work-open", {
-                  path: url.pathname
-                });
+                  if (
+                    url.origin !== location.origin
+                  ) return;
 
-              } catch (_) {}
+                  track(
+                    "work-open",
+                    {
+                      path: url.pathname
+                    }
+                  );
 
-            });
+                } catch (_) {}
+
+              }
+            );
 
 
-            /* ГЛУБИНА ПРОКРУТКИ */
+            /* ГЛУБИНА HTML-СТРАНИЦ */
 
-            const scrollMarks = [25, 50, 75, 100];
-            const scrollSent = new Set();
+            const marks = [25, 50, 75, 100];
+            const sent = new Set();
 
             function checkScroll() {
 
-              const doc = document.documentElement;
+              const doc =
+                document.documentElement;
 
               const available = Math.max(
-                doc.scrollHeight - window.innerHeight,
+                doc.scrollHeight
+                  - window.innerHeight,
                 1
               );
 
               const percent = Math.min(
                 100,
                 Math.round(
-                  (window.scrollY / available) * 100
+                  window.scrollY
+                  / available
+                  * 100
                 )
               );
 
-              scrollMarks.forEach(mark => {
+              marks.forEach(mark => {
 
                 if (
                   percent >= mark &&
-                  !scrollSent.has(mark)
+                  !sent.has(mark)
                 ) {
 
-                  scrollSent.add(mark);
+                  sent.add(mark);
 
-                  track("scroll-depth", {
-                    percent: mark
-                  });
+                  track(
+                    "scroll-depth",
+                    {
+                      percent: mark
+                    }
+                  );
                 }
 
               });
-
             }
 
             window.addEventListener(
@@ -145,21 +438,26 @@ jobs:
               { passive: true }
             );
 
-            checkScroll();
 
+            /* АКТИВНОЕ ВРЕМЯ */
 
-            /* АКТИВНОЕ ВРЕМЯ НА СТРАНИЦЕ */
+            const timeMarks = [
+              30,
+              60,
+              120,
+              300
+            ];
 
-            const timeMarks = [30, 60, 120, 300];
-            const timeSent = new Set();
+            const timeSent =
+              new Set();
 
             let activeSeconds = 0;
 
             setInterval(() => {
 
               if (
-                document.visibilityState === "visible" &&
-                document.hasFocus()
+                document.visibilityState
+                  === "visible"
               ) {
 
                 activeSeconds++;
@@ -173,9 +471,12 @@ jobs:
 
                     timeSent.add(mark);
 
-                    track("active-time", {
-                      seconds: mark
-                    });
+                    track(
+                      "active-time",
+                      {
+                        seconds: mark
+                      }
+                    );
                   }
 
                 });
@@ -188,7 +489,9 @@ jobs:
           </script>
           '''
 
-          html_files = list(Path("_site").rglob("*.html"))
+          html_files = list(
+              Path("_site").rglob("*.html")
+          )
 
           changed = 0
 
@@ -202,7 +505,12 @@ jobs:
               if WEBSITE_ID in text:
                   continue
 
-              if re.search(r"</head\s*>", text, re.I):
+              if re.search(
+                  r"</head\s*>",
+                  text,
+                  re.I
+              ):
+
                   text = re.sub(
                       r"</head\s*>",
                       tracker + "\n</head>",
@@ -210,10 +518,17 @@ jobs:
                       count=1,
                       flags=re.I
                   )
+
               else:
                   text = tracker + "\n" + text
 
-              if re.search(r"</body\s*>", text, re.I):
+
+              if re.search(
+                  r"</body\s*>",
+                  text,
+                  re.I
+              ):
+
                   text = re.sub(
                       r"</body\s*>",
                       behaviour + "\n</body>",
@@ -221,8 +536,10 @@ jobs:
                       count=1,
                       flags=re.I
                   )
+
               else:
                   text += "\n" + behaviour
+
 
               path.write_text(
                   text,
@@ -232,8 +549,8 @@ jobs:
               changed += 1
 
           print(
-              f"Found {len(html_files)} HTML files; "
-              f"analytics added to {changed}"
+              f"Umami added to "
+              f"{changed} HTML pages"
           )
           PY
 
@@ -241,7 +558,6 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./_site
-
 
   deploy:
     environment:
