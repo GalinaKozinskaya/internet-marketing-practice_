@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palantir × CJM — производство и инфраструктура</title>
+<meta name="description" content="Карта пути B2B-клиента Palantir: производство и инфраструктура. Три экрана — от проблемы и пилота до внедрения, расширения и смены поставщика.">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#020705;--deep:#03110d;--forest:#06271d;--forest2:#08382a;
+  --ink:#f7efe1;--muted:#bdcec5;--dim:#789087;
+  --mint:#80e2c4;--mint2:#159171;--gold:#d8b66e;--gold2:#f2d99c;
+  --rust:#cf806b;--rust2:#efb6a7;--line:rgba(128,226,196,.18);
+  --shadow:0 24px 76px rgba(0,0,0,.34);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI Variable Text","Segoe UI",Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(128,226,196,.24)}
+.page{
+  width:100%;height:100vh;height:100dvh;min-width:1120px;min-height:560px;scroll-snap-align:start;position:relative;isolation:isolate;overflow:hidden;
+  background:radial-gradient(900px 540px at 84% 2%,rgba(18,138,104,.20),transparent 63%),radial-gradient(760px 460px at 7% 97%,rgba(216,182,110,.10),transparent 70%),linear-gradient(145deg,#010403 0%,#03110d 42%,#06261c 100%);
+}
+.page.second{background:radial-gradient(900px 540px at 13% 2%,rgba(18,138,104,.16),transparent 63%),radial-gradient(760px 460px at 91% 97%,rgba(216,182,110,.11),transparent 70%),linear-gradient(145deg,#020604 0%,#041610 46%,#06291f 100%)}
+.page.third{background:radial-gradient(860px 520px at 88% 4%,rgba(216,182,110,.13),transparent 66%),radial-gradient(760px 460px at 8% 94%,rgba(18,138,104,.14),transparent 70%),linear-gradient(145deg,#020604 0%,#041610 46%,#05241a 100%)}
+.page::before{content:"";position:absolute;inset:0;z-index:-3;opacity:.25;background-image:linear-gradient(rgba(128,226,196,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(128,226,196,.04) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(circle at 50% 46%,#000 0 44%,transparent 88%)}
+.page::after{content:"";position:absolute;z-index:-2;inset:-34%;background:conic-gradient(from 180deg at 51% 49%,transparent 0 30%,rgba(128,226,196,.045) 38%,rgba(255,255,255,.045) 42%,rgba(216,182,110,.042) 47%,transparent 54% 100%);filter:blur(30px);animation:field 28s linear infinite}
+@keyframes field{to{transform:rotate(360deg)}}
+.wrap{width:min(calc(100% - 44px),1560px);height:100%;margin:auto;padding:9px 0 8px;display:grid;grid-template-rows:24px 72px 44px minmax(0,1fr) 26px;gap:8px}
+.second .wrap{grid-template-rows:24px 120px minmax(0,1fr) 26px}.third .wrap{grid-template-rows:24px 88px minmax(0,1fr) 26px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{font-size:13px;font-weight:850;letter-spacing:.095em;color:#edf3ef;white-space:nowrap}.brand i{font-style:normal;color:#80cbb5;font-weight:700}
+.where{font-size:11px;letter-spacing:.06em;color:#80948b;white-space:nowrap}
+.hero{display:grid;grid-template-columns:minmax(390px,.78fr) minmax(0,1.22fr);gap:28px;align-items:end;min-height:0}
+.eyebrow{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8edbc4;font-weight:850}
+h1{margin:3px 0 0;font:700 clamp(31px,2.55vw,43px)/1 Georgia,"Times New Roman",serif;letter-spacing:-.04em;color:#f7ebd8;text-wrap:balance}
+.goal{align-self:end;padding:10px 14px;border:1px solid rgba(216,182,110,.30);border-radius:16px;background:linear-gradient(135deg,rgba(216,182,110,.09),rgba(128,226,196,.035));box-shadow:0 14px 42px rgba(0,0,0,.15);font-size:14.5px;line-height:1.38;color:#d7e1dc}
+.goal b{color:var(--gold2)}
+.segments{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.seg{position:relative;min-width:0;padding:6px 10px;border:1px solid rgba(128,226,196,.12);border-radius:12px;background:linear-gradient(145deg,rgba(8,43,33,.68),rgba(3,23,17,.75));overflow:hidden}
+.seg small{display:block;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#6e857a;font-weight:850}.seg strong{display:block;margin-top:1px;font:700 12.5px/1.12 Georgia,serif;color:#99ada4}
+.seg.selected{border-color:rgba(216,182,110,.72);background:linear-gradient(145deg,rgba(12,98,74,.98),rgba(5,48,36,.97));box-shadow:0 15px 42px rgba(0,0,0,.22),inset 0 0 0 1px rgba(255,255,255,.035)}
+.seg.selected small{color:#c0f2e4}.seg.selected strong{color:#fff0d3}.seg.selected::before{content:"";position:absolute;inset:-130% -70%;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.12) 50%,transparent 58%);animation:segshine 7.6s ease-in-out infinite}
+@keyframes segshine{0%,74%{transform:translateX(-80%) rotate(7deg)}100%{transform:translateX(82%) rotate(7deg)}}
+.board{position:relative;min-height:0;border:1px solid rgba(128,226,196,.14);border-radius:24px;overflow:hidden;background:linear-gradient(145deg,rgba(3,24,18,.80),rgba(2,13,10,.86));box-shadow:var(--shadow);padding:14px 14px 12px}
+.board::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(520px 280px at 15% 18%,rgba(128,226,196,.075),transparent 70%),radial-gradient(500px 300px at 84% 82%,rgba(216,182,110,.065),transparent 72%)}
+.board::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:24px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.018),inset 0 -80px 150px rgba(0,0,0,.10)}
+.cards{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch;padding-bottom:70px}
+.card{--mx:50%;--my:50%;position:relative;min-width:0;height:100%;padding:15px 15px 14px;border:1px solid rgba(128,226,196,.20);border-radius:19px;background:linear-gradient(145deg,rgba(8,54,40,.94),rgba(3,27,20,.97));box-shadow:0 18px 52px rgba(0,0,0,.24);overflow:hidden;transition:transform .25s cubic-bezier(.16,1,.3,1),border-color .22s,box-shadow .22s}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(280px circle at var(--mx) var(--my),rgba(128,226,196,.14),transparent 64%);opacity:0;transition:.2s}
+.card:hover{transform:translateY(-3px);border-color:rgba(128,226,196,.52);box-shadow:0 28px 72px rgba(0,0,0,.36),0 0 38px rgba(21,145,113,.08)}.card:hover::before{opacity:1}
+.card.gold{border-color:rgba(216,182,110,.34);background:linear-gradient(145deg,rgba(56,46,26,.70),rgba(4,31,23,.95))}
+.num{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:24px;padding:0 8px;border-radius:8px;background:#0b6b52;color:#fff1d8;font:850 9.5px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 0 0 4px rgba(128,226,196,.045)}.gold .num{background:#7a6339}
+.card h2{margin:8px 0 7px;font:700 clamp(24px,1.85vw,31px)/1.04 Georgia,serif;letter-spacing:-.03em;color:#f7ead4;text-wrap:balance}.gold h2{color:#ffe3ad}
+.quote{margin:0 0 9px;color:#a9c0b6;font:italic clamp(15px,1.14vw,18px)/1.24 Georgia,serif}
+.card p{margin:0;color:#d6e2dc;font-size:clamp(18px,1.38vw,22px);line-height:1.34;letter-spacing:-.008em}
+.flow{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+.flow path{fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.main-base{stroke:url(#mainGrad);stroke-width:2.7;filter:drop-shadow(0 0 7px rgba(128,226,196,.35))}.second .main-base{stroke:url(#mainGrad2)}
+.main-run{stroke:#f6fffc;stroke-opacity:.88;stroke-width:1.2;stroke-dasharray:10 17;animation:move 2.05s linear infinite;filter:drop-shadow(0 0 8px rgba(128,226,196,.65))}
+.branch{stroke:rgba(207,128,107,.78);stroke-width:1.7;stroke-dasharray:5 8;animation:dash 2.1s linear infinite}
+.return{stroke:rgba(216,182,110,.82);stroke-width:1.8;stroke-dasharray:8 9;animation:dash 2.45s linear infinite;filter:drop-shadow(0 0 6px rgba(216,182,110,.24))}
+@keyframes move{to{stroke-dashoffset:-54}}@keyframes dash{to{stroke-dashoffset:-42}}
+.exits,.outcome-row{position:absolute;z-index:3;left:14px;right:14px;bottom:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.exit,.outcome{min-height:54px;padding:8px 10px;border:1px solid rgba(207,128,107,.30);border-radius:11px;background:linear-gradient(145deg,rgba(78,33,27,.54),rgba(29,19,16,.74));box-shadow:0 12px 34px rgba(0,0,0,.18);color:#c9b5ae}
+.exit strong,.outcome strong{display:block;font:700 14.5px/1.12 Georgia,serif;color:#f0c7bb}.exit span,.outcome span{display:block;margin-top:3px;font-size:11.8px;line-height:1.25}
+.exit.gold,.outcome{border-color:rgba(216,182,110,.38);background:linear-gradient(145deg,rgba(66,50,26,.54),rgba(26,23,16,.72))}.exit.gold strong,.outcome strong{color:#f2d89c}.exit.gold span,.outcome span{color:#cabd9c}.outcome.rust{border-color:rgba(207,128,107,.38);background:linear-gradient(145deg,rgba(73,31,26,.54),rgba(28,18,16,.74))}.outcome.rust strong{color:#efb9aa}.outcome.rust span{color:#c7ada6}
+.bottom{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0}
+.sources{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:nowrap}.src{display:inline-flex;align-items:center;padding:4px 7px;border:1px solid rgba(128,226,196,.17);border-radius:999px;background:rgba(5,37,28,.62);color:#a9d0c2;font-size:10.5px;font-weight:760;white-space:nowrap;transition:.18s}.src:hover{color:#fff0d2;border-color:rgba(216,182,110,.54);transform:translateY(-1px)}
+.next{display:flex;align-items:center;gap:7px;color:#9fb6ad;font-size:11px;white-space:nowrap}.next i{font-style:normal;color:var(--gold2);font-size:16px;animation:down 1.35s ease-in-out infinite}@keyframes down{50%{transform:translateY(3px)}}
+.side-index{position:fixed;z-index:10;right:10px;top:50%;transform:translateY(-50%);display:grid;gap:8px}.side-index a{width:7px;height:25px;border-radius:999px;background:rgba(128,226,196,.16);border:1px solid rgba(128,226,196,.16);transition:.2s}.side-index a.active{background:linear-gradient(#80e2c4,#d8b66e);box-shadow:0 0 13px rgba(128,226,196,.42)}
+
+/* V6 — точечное продолжение пути: пилот, третий экран и выход */
+.third .board{display:grid;grid-template-rows:auto auto auto;align-content:start;gap:10px;padding:14px}
+.third .cards{height:auto;grid-template-columns:repeat(2,minmax(0,1fr));max-width:940px;width:100%;margin:0 auto;padding-bottom:0}
+.third .card{height:auto;min-height:205px}
+.third .outcome-row{position:relative;left:auto;right:auto;bottom:auto;grid-template-columns:repeat(2,minmax(0,1fr));max-width:940px;width:100%;margin:0 auto}
+.case-block{max-width:1240px;width:100%;margin:1px auto 0;padding-top:9px;border-top:1px solid rgba(128,226,196,.14)}
+.case-block-title{margin:0 0 7px;color:#a9c9bd;font:700 13px/1.2 Georgia,serif}
+.case-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.case-proof{min-width:0;padding:7px 9px;border:1px solid rgba(128,226,196,.15);border-radius:10px;background:linear-gradient(145deg,rgba(6,43,32,.62),rgba(3,23,17,.72));transition:.18s}
+.case-proof:hover{border-color:rgba(216,182,110,.46);transform:translateY(-1px)}
+.case-proof strong{display:block;color:#f0dfbd;font:700 12.5px/1.1 Georgia,serif}
+.case-proof span{display:block;margin-top:2px;color:#aebfb7;font-size:11.3px;line-height:1.22}
+.third .gold-link{color:#d8b66e}
+
+@media(max-height:680px){
+  .wrap{grid-template-rows:22px 76px 40px minmax(0,1fr) 24px;gap:6px;padding:6px 0}.second .wrap{grid-template-rows:22px 88px minmax(0,1fr) 24px}.third .wrap{grid-template-rows:22px 72px minmax(0,1fr) 24px}
+  h1{font-size:31px}.goal{font-size:13.5px;padding:8px 12px}.seg{padding:5px 9px}.seg strong{font-size:11.8px}
+  .board{padding:11px 12px 10px}.cards{gap:10px;padding-bottom:62px}.card{padding:12px 13px}.card h2{font-size:23px;margin:6px 0}.quote{font-size:14.5px;margin-bottom:7px}.card p{font-size:17.6px;line-height:1.31}
+  .exits,.outcome-row{left:12px;right:12px;bottom:10px;gap:10px}.exit,.outcome{min-height:48px;padding:6px 9px}.exit strong,.outcome strong{font-size:13px}.exit span,.outcome span{font-size:10.5px}.src{font-size:9.7px;padding:3px 6px}.next{font-size:10px}.third .board{padding:8px 12px;gap:6px}.third .card{min-height:168px}.case-block{padding-top:7px}.case-block-title{font-size:12px;margin-bottom:5px}.case-grid{gap:5px}.case-proof{padding:5px 7px}.case-proof strong{font-size:11.5px}.case-proof span{font-size:10px;line-height:1.18}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+
+<style id="skillbox-final-fixes">
+/* Финальная точечная правка: один сегмент, явные поля CJM и устойчивость верстки. */
+.segment-summary{display:flex;align-items:center;gap:7px;min-width:0;padding:8px 12px;border-left:2px solid var(--mint);border-radius:0 12px 12px 0;background:linear-gradient(90deg,rgba(128,226,196,.075),rgba(128,226,196,.018));color:#baccc3;font-size:12.5px;line-height:1.28;overflow:hidden}
+.segment-summary b{color:#edf5f1;white-space:nowrap}
+.criteria{position:relative;display:grid;gap:0;margin-top:8px;border-top:1px solid rgba(128,226,196,.14)}
+.criterion{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:5px 0;border-bottom:1px solid rgba(128,226,196,.10)}
+.criterion:last-child{border-bottom:0}
+.criterion b{color:#e9cf99;font-size:9.7px;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;font-weight:850}
+.criterion span{color:#d3dfd9;font-size:12.3px;line-height:1.25}
+.card.gold .criterion b{color:#f0d89e}
+.card p{font-size:inherit}
+/* На втором экране заголовок больше не может заходить на карточки даже в низком окне браузера. */
+.second .hero{align-items:center}
+.second h1{font-size:clamp(29px,2.35vw,39px);line-height:1.01}
+@media(max-height:680px){
+  .second .wrap{grid-template-rows:22px 116px minmax(0,1fr) 24px}
+  .second h1{font-size:29px;line-height:1.01}
+  .criterion{grid-template-columns:82px minmax(0,1fr);gap:6px;padding:3.5px 0}
+  .criterion b{font-size:8.6px}
+  .criterion span{font-size:10.8px;line-height:1.18}
+  .card h2{font-size:20px;margin:5px 0}
+  .quote{font-size:12.6px;line-height:1.16;margin-bottom:5px}
+  .card{padding:10px 12px}
+  .segment-summary{font-size:11px;padding:5px 10px}
+}
+@media(min-height:681px){
+  .card h2{font-size:clamp(20px,1.6vw,27px)}
+  .quote{font-size:clamp(13px,1vw,16px)}
+}
+</style>
+</head>
+<body>
+<nav class="side-index" aria-label="Три экрана"><a href="#before" class="active" aria-label="До и во время пилота"></a><a href="#after" aria-label="От пилота к рабочему результату"></a><a href="#renewal" aria-label="Продление и выход"></a></nav>
+<section class="page" id="before">
+  <div class="wrap">
+    <header class="top"><div class="brand">PALANTIR <i>× CJM</i></div><div class="where">Практическая 6.7 · один выбранный сегмент</div></header>
+    <section class="hero">
+      <div><div class="eyebrow">Корпоративный рынок · производство и инфраструктура</div><h1>До договора проект может остановиться на каждом шаге</h1></div>
+      <div class="goal"><b>Бизнес-цель:</b> снизить измеримые потери в одном выбранном процессе и расширять Palantir только после подтверждённого устойчивого эффекта.</div>
+    </section>
+    <div class="segment-summary"><b>Выбранный сегмент:</b> крупные производственные, транспортные и энергетические компании, где простой, брак, дефицит или задержка можно посчитать в деньгах.</div>
+    <section class="board" id="board1" aria-label="Путь клиента до договора">
+      <svg class="flow" id="flow1" aria-hidden="true"><defs><linearGradient id="mainGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#159171"/><stop offset=".55" stop-color="#80e2c4"/><stop offset="1" stop-color="#d8b66e"/></linearGradient><marker id="arrowMain" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#80e2c4"/></marker><marker id="arrowRust" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#cf806b"/></marker><marker id="arrowGold" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#d8b66e"/></marker></defs><g id="paths1"></g></svg>
+      <div class="cards">
+        <article class="card" id="a1"><span class="num">01</span><h2>Потери считают в деньгах</h2><div class="quote">«Сколько нам стоит простой, брак или задержка?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Посчитать цену потерь и выбрать один процесс, где улучшение можно измерить.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Раздражение: проблема повторяется и уже стоит денег.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Ущерб не посчитан или владелец проблемы не определён.</span></div><div class="criterion"><b>Точка контакта</b><span>Отраслевой материал, рекомендация, первая рабочая встреча с Palantir.</span></div><div class="criterion"><b>Решение</b><span>Зафиксировать исходный показатель и цену бездействия.</span></div></div></article>
+        <article class="card" id="a2"><span class="num">02</span><h2>Назначают ответственного за результат</h2><div class="quote">«Кто отвечает за итог и какие данные нужны?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Назначить владельца результата, будущих пользователей, нужные данные и исходный показатель.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Настороженность: проект затрагивает несколько подразделений.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Нет ответственного, доступа к данным или единого владельца процесса.</span></div><div class="criterion"><b>Точка контакта</b><span>Рабочая встреча клиента с Palantir.</span></div><div class="criterion"><b>Решение</b><span>Закрепить владельца результата, владельцев данных и участников проверки.</span></div></div></article>
+        <article class="card" id="a3"><span class="num">03</span><h2>Сравнивают Palantir с альтернативами</h2><div class="quote">«Почему Palantir, а не своя разработка?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Сравнить текущий способ, свою разработку, Palantir и других поставщиков.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Сомнение: даст ли система результат именно на наших данных.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Старые системы, внутренняя разработка, прежние инвестиции и стоимость перехода.</span></div><div class="criterion"><b>Точка контакта</b><span>Сайт Palantir, демонстрация, рабочая встреча и отраслевые мероприятия.</span></div><div class="criterion"><b>Решение</b><span>Сравнивать варианты по одному сценарию и одной измеримой метрике.</span></div></div></article>
+        <article class="card gold" id="a4"><span class="num">04</span><h2>Пилот Palantir на данных клиента</h2><div class="quote">«Что изменится в нашем процессе?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Проверить эффект на реальных данных и в реальном рабочем процессе.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Осторожный интерес: преимущество ещё нужно доказать.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Чувствительные данные, время специалистов и риск, что пилот не даст результата.</span></div><div class="criterion"><b>Точка контакта</b><span>Короткий пилот на данных клиента и рабочие встречи с Palantir.</span></div><div class="criterion"><b>Решение</b><span>Заранее согласовать метрику успеха, срок, данные и границы доступа.</span></div></div></article>
+      </div>
+      <div class="exits">
+        <article class="exit" id="x1"><strong>Нет приоритета</strong><span>Потери терпимы или не доказаны — бюджет не выделяют.</span></article>
+        <article class="exit" id="x2"><strong>Нет ответственного</strong><span>Решение остаётся между подразделениями и останавливается.</span></article>
+        <article class="exit" id="x3"><strong>Выбрана альтернатива</strong><span>Внутренняя разработка, другой поставщик или действующая система.</span></article>
+        <article class="exit gold" id="x4"><strong>Пилот не доказал эффект</strong><span>Сценарий меняют, возвращаются к сравнению или закрывают проект.</span></article>
+      </div>
+    </section>
+    <footer class="bottom"><div class="sources"><a class="src" href="https://www.sec.gov/Archives/edgar/data/1321655/000132165526000028/pltr-20260331.htm" target="_blank" rel="noopener">Отчёт Palantir · проверки и цикл продажи ↗</a><a class="src" href="https://www.palantir.com/impact/inventory-optimization/" target="_blank" rel="noopener">Palantir · промышленный результат ↗</a></div><a class="next" href="#after">После пилота путь продолжается <i>↓</i></a></footer>
+  </div>
+</section>
+<section class="page second" id="after">
+  <div class="wrap">
+    <header class="top"><div class="brand">PALANTIR <i>× CJM</i></div><div class="where">Тот же клиент · после пилота</div></header>
+    <section class="hero">
+      <div><div class="eyebrow">После пилота</div><h1>Пилот доказал возможность. Теперь решение проходит внутри компании</h1></div>
+      <div class="goal">Удачный пилот ещё не равен покупке. Клиент должен <b>решить, что эффект оправдывает покупку, согласовать договор, внедрить систему и подтвердить результат в обычной работе.</b></div>
+    </section>
+    <section class="board" id="board2" aria-label="Путь клиента от пилота к рабочему результату">
+      <svg class="flow" id="flow2" aria-hidden="true"><defs><linearGradient id="mainGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#159171"/><stop offset=".55" stop-color="#80e2c4"/><stop offset="1" stop-color="#d8b66e"/></linearGradient><marker id="arrowMain2" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#80e2c4"/></marker><marker id="arrowRust2" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#cf806b"/></marker><marker id="arrowGold2" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#d8b66e"/></marker></defs><g id="paths2"></g></svg>
+      <div class="cards">
+        <article class="card" id="b5"><span class="num">05</span><h2>Результат пилота проверяют внутри</h2><div class="quote">«Эффект достаточен, чтобы менять рабочий процесс?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Понять, повторяется ли эффект в рабочем масштабе и оправдывает ли он затраты.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Осторожность: удачный пилот ещё не равен покупке.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Эффект может оказаться разовым, слишком узким или дорогим для масштабирования.</span></div><div class="criterion"><b>Точка контакта</b><span>Разбор пилота с операционной командой, финансами, ИТ и Palantir.</span></div><div class="criterion"><b>Решение</b><span>Повторить или уточнить сценарий; идти дальше только при подтверждённой метрике.</span></div></div></article>
+        <article class="card" id="b6"><span class="num">06</span><h2>Согласуют экономику, безопасность и договор</h2><div class="quote">«Эффект есть. Можно ли покупать?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Получить внутреннее согласование покупки и условий внедрения.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Напряжение: решение дорогое и затрагивает много подразделений.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Стоимость, окупаемость, совместимость, безопасность, юридические и закупочные требования.</span></div><div class="criterion"><b>Точка контакта</b><span>Коммерческое предложение, материалы по безопасности, договор, встречи с закупками и руководством.</span></div><div class="criterion"><b>Решение</b><span>Зафиксировать экономику, доступ к данным, ответственность, поддержку и критерии приёмки.</span></div></div></article>
+        <article class="card" id="b7"><span class="num">07</span><h2>Внедрение должно изменить ежедневную работу</h2><div class="quote">«Система запущена. Ею действительно пользуются?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Встроить систему в ежедневный процесс без остановки критической работы.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Опасение: не сорвётся ли работа и примут ли систему пользователи.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Качество данных, сложная интеграция, обучение и возврат сотрудников к старым инструментам.</span></div><div class="criterion"><b>Точка контакта</b><span>Встречи по внедрению, документация, обучение и поддержка пользователей.</span></div><div class="criterion"><b>Решение</b><span>Запускать поэтапно, проверять данные, обучать людей и предусмотреть безопасный откат.</span></div></div></article>
+        <article class="card gold" id="b8"><span class="num">08</span><h2>Подтверждают устойчивый эффект</h2><div class="quote">«Улучшение повторяется или это разовый успех?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Подтвердить тот же эффект в обычной работе относительно исходного уровня.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Осторожная уверенность только после повторяемого результата.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Эффект не повторяется, использование падает или меняются исходные условия.</span></div><div class="criterion"><b>Точка контакта</b><span>Разбор результата с Palantir, показатели использования и рабочая поддержка.</span></div><div class="criterion"><b>Решение</b><span>Сравнивать одну и ту же метрику во времени и признавать эффект только при повторяемости.</span></div></div></article>
+      </div>
+      <div class="outcome-row">
+        <article class="outcome" id="y5"><strong>Пилот не прошёл внутреннюю проверку</strong><span>Сценарий уточняют, повторяют или закрывают.</span></article>
+        <article class="outcome" id="y6"><strong>Согласование остановлено</strong><span>Экономика, безопасность или договор требуют пересмотра.</span></article>
+        <article class="outcome rust" id="y7"><strong>Пользователи не перешли</strong><span>Система есть, но ежедневный процесс не изменился.</span></article>
+        <article class="outcome rust" id="y8"><strong>Эффект не удержался</strong><span>Расширение откладывают или сокращают использование.</span></article>
+      </div>
+    </section>
+    <footer class="bottom"><div class="sources"><a class="src" href="https://www.sec.gov/Archives/edgar/data/1321655/000132165526000011/pltr-20251231.htm" target="_blank" rel="noopener">Отчёт Palantir · пилоты, внедрение и обучение ↗</a><a class="src" href="https://investors.palantir.com/news-details/2022/Palantir-Technologies-and-Hyundai-Heavy-Industries-Group-Grow-Partnership-to-45M-with-Expansion-into-Shipbuilding/" target="_blank" rel="noopener">Hyundai · успешный пилот → расширение ↗</a><a class="src" href="https://www.palantir.com/impact/jacobs/" target="_blank" rel="noopener">Jacobs · проверка → рабочий объект ↗</a></div><a class="next" href="#renewal">После устойчивого результата <i>↓</i></a></footer>
+  </div>
+</section>
+
+<section class="page third" id="renewal">
+  <div class="wrap">
+    <header class="top"><div class="brand">PALANTIR <i>× CJM</i></div><div class="where">Тот же клиент · продление и смена поставщика</div></header>
+    <section class="hero">
+      <div><div class="eyebrow">После развёртывания</div><h1>После результата: новый цикл или выход</h1></div>
+      <div class="goal">После устойчивого результата клиент решает, <b>расширять Palantir, сохранить текущий объём, сократить его или сменить поставщика.</b></div>
+    </section>
+    <section class="board" id="board3" aria-label="Продление, расширение и выход">
+      <svg class="flow" id="flow3" aria-hidden="true"><defs><linearGradient id="mainGrad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#159171"/><stop offset=".55" stop-color="#80e2c4"/><stop offset="1" stop-color="#d8b66e"/></linearGradient><marker id="arrowMain3" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#80e2c4"/></marker><marker id="arrowRust3" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#cf806b"/></marker><marker id="arrowGold3" markerWidth="8" markerHeight="8" refX="6.4" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#d8b66e"/></marker></defs><g id="paths3"></g></svg>
+      <div class="cards">
+        <article class="card" id="c9"><span class="num">09</span><h2>Расширяют только доказанный результат</h2><div class="quote">«Где этот эффект повторится?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Найти соседний процесс, подразделение или группу пользователей, где результат можно повторить.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Уверенность после доказанного эффекта, но риск поспешного расширения остаётся.</span></div><div class="criterion"><b>Проблема / барьер</b><span>У нового процесса свои данные, владелец и исходный показатель; успех не переносится автоматически.</span></div><div class="criterion"><b>Точка контакта</b><span>Разбор новых сценариев и план расширения вместе с Palantir.</span></div><div class="criterion"><b>Решение</b><span>Каждый новый процесс начинать как новый короткий цикл: проблема → данные → метрика → проверка.</span></div></div></article>
+        <article class="card gold" id="c10"><span class="num">10</span><h2>Выход и смена поставщика</h2><div class="quote">«Как уйти без потери данных и остановки работы?»</div><div class="criteria"><div class="criterion"><b>Цель</b><span>Продлить, сократить использование или сменить поставщика без остановки операций.</span></div><div class="criterion"><b>Эмоция — гипотеза</b><span>Уверенность при понятном плане перехода или раздражение при растущей зависимости.</span></div><div class="criterion"><b>Проблема / барьер</b><span>Глубокая интеграция данных, рабочих процессов и знаний повышает сложность перехода.</span></div><div class="criterion"><b>Точка контакта</b><span>Обсуждение продления, документация, экспорт данных и план перехода.</span></div><div class="criterion"><b>Решение</b><span>Использовать открытые форматы, экспорт данных, внутреннюю документацию и поэтапный переход.</span></div></div></article>
+      </div>
+      <div class="outcome-row">
+        <article class="outcome" id="z9"><strong>Новый процесс — новый цикл</strong><span>Снова нужны проблема, данные, критерий успеха и проверка.</span></article>
+        <article class="outcome" id="z10"><strong>Переход готовят заранее</strong><span>Открытые форматы, экспорт данных и внутренние знания снижают цену смены поставщика.</span></article>
+      </div>
+      <div class="case-block">
+        <div class="case-block-title">От проверки к ежедневной работе — восемь публичных примеров</div>
+        <div class="case-grid">
+          <a class="case-proof" href="https://www.palantir.com/impact/airbus/" target="_blank" rel="noopener"><strong>Airbus</strong><span>A350 → соседние процессы → Skywise</span></a>
+          <a class="case-proof" href="https://investors.palantir.com/news-details/2022/Palantir-Technologies-and-Hyundai-Heavy-Industries-Group-Grow-Partnership-to-45M-with-Expansion-into-Shipbuilding/" target="_blank" rel="noopener"><strong>Hyundai Heavy Industries</strong><span>успешный пилот → три судостроительные компании</span></a>
+          <a class="case-proof" href="https://www.palantir.com/impact/jacobs/" target="_blank" rel="noopener"><strong>Jacobs</strong><span>проверка на одном объекте → 20% экономии электроэнергии</span></a>
+          <a class="case-proof" href="https://www.palantir.com/impact/kindermorgan/" target="_blank" rel="noopener"><strong>Kinder Morgan</strong><span>проверка → семидневный инструмент для решений</span></a>
+          <a class="case-proof" href="https://investors.palantir.com/news-details/2023/Palantir-and-Panasonic-Energy-of-North-America-sign-multi-year-agreement" target="_blank" rel="noopener"><strong>Panasonic Energy</strong><span>первые месяцы → многолетняя «умная фабрика»</span></a>
+          <a class="case-proof" href="https://www.palantir.com/impact/sonnedix/" target="_blank" rel="noopener"><strong>Sonnedix</strong><span>солнечная станция → несколько площадок</span></a>
+          <a class="case-proof" href="https://www.palantir.com/impact" target="_blank" rel="noopener"><strong>General Mills</strong><span>часть сети → около $14 млн экономии в год</span></a>
+          <a class="case-proof" href="https://investors.palantir.com/news-details/2024/Palantir-and-bp-Agree-to-5-Year-Strategic-Relationship-With-New-AI-Capabilities/" target="_blank" rel="noopener"><strong>bp</strong><span>с 2014 года → новый пятилетний этап партнёрства в 2024 году</span></a>
+        </div>
+      </div>
+    </section>
+    <footer class="bottom"><div class="sources"><a class="src" href="https://www.sec.gov/Archives/edgar/data/1321655/000132165526000011/pltr-20251231.htm" target="_blank" rel="noopener">Отчёт Palantir · зависимость после интеграции ↗</a><a class="src" href="https://www.palantir.com/docs/foundry/architecture-center/interoperability" target="_blank" rel="noopener">Palantir · открытые форматы ↗</a><a class="src" href="https://www.palantir.com/docs/foundry/data-connection/export-overview" target="_blank" rel="noopener">Palantir · экспорт данных ↗</a></div><a class="next" href="#before">Вернуться к началу <i>↑</i></a></footer>
+  </div>
+</section>
+<script>
+const NS='http://www.w3.org/2000/svg';
+function mkPath(d,cls,marker){const p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('class',cls);if(marker)p.setAttribute('marker-end',`url(#${marker})`);return p}
+function points(board,id,side){const el=document.getElementById(id),r=el.getBoundingClientRect(),b=board.getBoundingClientRect();const map={left:[r.left-b.left,r.top+r.height/2-b.top],right:[r.right-b.left,r.top+r.height/2-b.top],top:[r.left+r.width/2-b.left,r.top-b.top],bottom:[r.left+r.width/2-b.left,r.bottom-b.top]};return map[side]}
+function curve(a,b){const[x1,y1]=a,[x2,y2]=b,dx=(x2-x1)*.48;return`M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`}
+function down(a,b){const[x1,y1]=a,[x2,y2]=b,my=y1+(y2-y1)*.53;return`M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`}
+function back(a,b){const[x1,y1]=a,[x2,y2]=b;const y=Math.max(10,Math.min(y1,y2)-20);return`M ${x1} ${y1} C ${x1} ${y}, ${x2} ${y}, ${x2} ${y2}`}
+function drawBoard(cfg){const board=document.getElementById(cfg.board),svg=document.getElementById(cfg.flow),g=document.getElementById(cfg.paths);g.innerHTML='';svg.setAttribute('viewBox',`0 0 ${board.clientWidth} ${board.clientHeight}`);const addMain=d=>{g.append(mkPath(d,'main-base',cfg.mainArrow));g.append(mkPath(d,'main-run'))};for(let i=0;i<cfg.main.length-1;i++)addMain(curve(points(board,cfg.main[i],'right'),points(board,cfg.main[i+1],'left')));(cfg.branches||[]).forEach(([a,b])=>g.append(mkPath(down(points(board,a,'bottom'),points(board,b,'top')),'branch',cfg.rustArrow)));(cfg.links||[]).forEach(([a,sa,b,sb,cls,marker])=>g.append(mkPath(curve(points(board,a,sa),points(board,b,sb)),cls,marker)));if(cfg.returnLine){const[a,b]=cfg.returnLine;g.append(mkPath(back(points(board,a,'top'),points(board,b,'bottom')),'return',cfg.goldArrow))}}
+function drawAll(){drawBoard({board:'board1',flow:'flow1',paths:'paths1',main:['a1','a2','a3','a4'],branches:[['a1','x1'],['a2','x2'],['a3','x3'],['a4','x4']],returnLine:['x4','a3'],mainArrow:'arrowMain',rustArrow:'arrowRust',goldArrow:'arrowGold'});drawBoard({board:'board2',flow:'flow2',paths:'paths2',main:['b5','b6','b7','b8'],branches:[['b5','y5'],['b6','y6'],['b7','y7'],['b8','y8']],mainArrow:'arrowMain2',rustArrow:'arrowRust2',goldArrow:'arrowGold2'});drawBoard({board:'board3',flow:'flow3',paths:'paths3',main:['c9'],branches:[['c9','z9'],['c10','z10']],links:[['c9','right','c10','left','return','arrowGold3']],mainArrow:'arrowMain3',rustArrow:'arrowRust3',goldArrow:'arrowGold3'})}
+addEventListener('load',()=>setTimeout(drawAll,80));addEventListener('resize',()=>requestAnimationFrame(drawAll));drawAll();
+document.querySelectorAll('.card').forEach(el=>el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--mx',(e.clientX-r.left)+'px');el.style.setProperty('--my',(e.clientY-r.top)+'px')}));
+const pages=[...document.querySelectorAll('.page')],dots=[...document.querySelectorAll('.side-index a')];const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){const i=pages.indexOf(e.target);dots.forEach((d,j)=>d.classList.toggle('active',i===j))}}),{threshold:.62});pages.forEach(p=>io.observe(p));
+</script>
+</body>
+</html>
